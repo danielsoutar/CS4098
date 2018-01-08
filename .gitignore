@@ -5,3 +5,11 @@
 /.ipynb_checkpoints/
 /__pycache__/
 /*.p
+/.coverage
+/*.txt
+/*.png
+/examples/
+/inputs/
+/stripped/
+/visual/
+
