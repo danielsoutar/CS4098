@@ -1,6 +1,12 @@
+from tqdm import tqdm
 import numpy as np
 
 d = 7
+
+
+def set_d(value):
+    global d
+    d = value
 
 
 class Cluster:
@@ -47,6 +53,8 @@ def create_cluster(cell, tile, index):
 
 
 def update_winning_cluster(cluster, image_clusters, new_cells, new_tiles):
+    cluster.add_cells(new_cells)
+    cluster.add_tiles(new_tiles)
     for cell, (i, j) in zip(new_cells, new_tiles):
         tile = image_clusters[i][j]
         key = get_key(cell)
@@ -58,24 +66,18 @@ def already_in_cluster(tile, cell):
     return key in tile
 
 
-def subsume(cluster1, cluster2):
+def subsume(cluster1, cluster2, image_clusters):
     winner, loser = None, None
-    cluster1_wins = None
+
     if(len(cluster1.cells) >= len(cluster2.cells)):
         winner = cluster1
         loser = cluster2
-        cluster1_wins = True
     else:
         winner = cluster2
         loser = cluster1
-        cluster1_wins = False
 
     new_cells, new_tiles = loser.surrender()
-
-    winner.add_cells(new_cells)
-    winner.add_tiles(new_tiles)
-
-    return cluster1_wins, new_cells, new_tiles
+    update_winning_cluster(winner, image_clusters, new_cells, new_tiles)
 
 
 def are_neighbours(c1, c2):
@@ -170,7 +172,7 @@ def get_neighbouring_windows(i, j, n, windows):
     return neighbouring_windows, neighbouring_indices
 
 
-def test_cluster_algorithm(toy_image, n, windows):
+def window_cleaning_algorithm(image, n, windows, load_bar=False):
     """Testing clustering algorithm on toy images"""
     image_clusters = np.empty((n, n), dtype=object)
 
@@ -178,36 +180,48 @@ def test_cluster_algorithm(toy_image, n, windows):
         for j in range(n):
             image_clusters[i][j] = {}  # Not ideal to have to dynamically resize, but you'd have to do it regardless, so...
 
-    for i in range(n):
-        for j in range(n):
-            current_tile = toy_image[i][j]
-            reversed_tile = current_tile[::-1]
-
-            neighbouring_windows, neighbouring_indices = get_neighbouring_windows(i, j, n, windows)
-            previous_indices = neighbouring_indices[0:4]
-            previous_indices.append((i, j))
-
-            for index, current_cell in enumerate(reversed_tile):
-                if not in_any_previous_cluster(image_clusters, previous_indices, current_cell):
-                    create_cluster(current_cell, image_clusters[i][j], (i, j))
-                neighbours = get_all_neighbours(current_cell, toy_image, index, (i, j), neighbouring_windows, neighbouring_indices)
-                for neighbour, (n_i, n_j) in neighbours:
-                    if not in_any_previous_cluster(image_clusters, previous_indices, neighbour):
-                        add_to_current_cluster(image_clusters[i][j], current_cell, neighbour, (n_i, n_j))
-                    elif not in_same_cluster(current_cell, neighbour, image_clusters, (i, j), (n_i, n_j)):
-                        current_cell_cluster = get_cluster(image_clusters[i][j], current_cell)
-                        neighbour_cluster = get_cluster(image_clusters[n_i][n_j], neighbour)
-
-                        ret, new_cells, new_tiles = subsume(current_cell_cluster, neighbour_cluster)
-                        if ret:
-                            update_winning_cluster(current_cell_cluster, image_clusters, new_cells, new_tiles)
-                        else:
-                            update_winning_cluster(neighbour_cluster, image_clusters, new_cells, new_tiles)
-
+    if load_bar:
+        for i in tqdm(range(n)):
+            for j in range(n):
+                current_tile = image[i][j]
+                reversed_tile = current_tile[::-1]
+                neighbouring_windows, neighbouring_indices = get_neighbouring_windows(i, j, n, windows)
+                previous_indices = neighbouring_indices[0:4]
+                previous_indices.append((i, j))
+                for index, current_cell in enumerate(reversed_tile):
+                    if not in_any_previous_cluster(image_clusters, previous_indices, current_cell):
+                        create_cluster(current_cell, image_clusters[i][j], (i, j))
+                    neighbours = get_all_neighbours(current_cell, image, index, (i, j), neighbouring_windows, neighbouring_indices)
+                    for neighbour, (n_i, n_j) in neighbours:
+                        if not in_any_previous_cluster(image_clusters, previous_indices, neighbour):
+                            add_to_current_cluster(image_clusters[i][j], current_cell, neighbour, (n_i, n_j))
+                        elif not in_same_cluster(current_cell, neighbour, image_clusters, (i, j), (n_i, n_j)):
+                            current_cell_cluster = get_cluster(image_clusters[i][j], current_cell)
+                            neighbour_cluster = get_cluster(image_clusters[n_i][n_j], neighbour)
+                            subsume(current_cell_cluster, neighbour_cluster, image_clusters)
+    else:
+        for i in range(n):
+            for j in range(n):
+                current_tile = image[i][j]
+                reversed_tile = current_tile[::-1]
+                neighbouring_windows, neighbouring_indices = get_neighbouring_windows(i, j, n, windows)
+                previous_indices = neighbouring_indices[0:4]
+                previous_indices.append((i, j))
+                for index, current_cell in enumerate(reversed_tile):
+                    if not in_any_previous_cluster(image_clusters, previous_indices, current_cell):
+                        create_cluster(current_cell, image_clusters[i][j], (i, j))
+                    neighbours = get_all_neighbours(current_cell, image, index, (i, j), neighbouring_windows, neighbouring_indices)
+                    for neighbour, (n_i, n_j) in neighbours:
+                        if not in_any_previous_cluster(image_clusters, previous_indices, neighbour):
+                            add_to_current_cluster(image_clusters[i][j], current_cell, neighbour, (n_i, n_j))
+                        elif not in_same_cluster(current_cell, neighbour, image_clusters, (i, j), (n_i, n_j)):
+                            current_cell_cluster = get_cluster(image_clusters[i][j], current_cell)
+                            neighbour_cluster = get_cluster(image_clusters[n_i][n_j], neighbour)
+                            subsume(current_cell_cluster, neighbour_cluster, image_clusters)
     return image_clusters
 
     # for index, current_cell in reversed_tile:
-    #     if not already_in_cluster(current_cel):  # This assumes in current tile or any previous neighbouring tile
+    #     if not already_in_cluster(current_cell):  # This assumes in current tile or any previous neighbouring tile
     #         create new cluster with current_cell in it in current tile
     #     neighbours is all cells in *all* neighbouring tiles within distance d of current_cell, accessed from 0 to index in current tile, else all
     #     for all neighbours (within distance d of current_cell and not current_cell itself):
