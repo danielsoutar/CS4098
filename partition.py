@@ -132,7 +132,13 @@ def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False):
     return partitioned_image, tiles
 
 
-
+def cleave_and_conquer(image, threshold, to_list=False):
+    """
+    Repeatedly divide an image in such a way so as to minimise the average number of cells per tile below a given threshold.
+    In theory this should reduce the search required towards the optimum - which is constraining search to only the neighbours of each cell.
+    Return the unevenly-partitioned input, and a table to indicate the neighbours of each tile(?).
+    """
+    pass
 
 
 
