@@ -38,7 +38,7 @@ for file in glob.glob("./examples/*.p"):
 
     print("Separated ...")
 
-    t = 20
+    t = 25
     partitioned_cancer_cells, windows = partition.partition(cancer_cells, tile_size=t, to_list=True)
     print("Cancer cells partitioned ...")
     result = fishermans_algorithm(partitioned_cancer_cells, t, windows)
@@ -82,6 +82,7 @@ for file in glob.glob("./examples/*.p"):
     plt.close()
 
     with open("./inputs/" + name + ".txt", "w", newline="") as dest:
+        dest.write("Average size of cluster: " + str(clusters_avg) + "\n")
         dest.write("Number of clusters: " + str(len(dups)) + "\n")
         dest.write("Total number of cells: " + str(total_cluster_cells) + "\n")
         dest.write("Cluster counts: " + "\n")

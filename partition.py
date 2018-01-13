@@ -141,5 +141,22 @@ def cleave_and_conquer(image, threshold, to_list=False):
     pass
 
 
+#+------+
+#|      |
+#|      |
+#+------+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # End of file

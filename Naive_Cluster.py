@@ -34,17 +34,17 @@ def get_cluster(image_clusters, cell):
     return image_clusters[key]
 
 
-def pure_get_cluster(image_clusters, cell):
+def pure_get_cluster(image_clusters):
     return image_clusters[-1]
-
-
-def pure_create_cluster(cell, image_clusters):
-    image_clusters.append(Cluster(cell))
 
 
 def create_cluster(cell, image_clusters):
     key = get_key(cell)
     image_clusters[key] = Cluster(cell)
+
+
+def pure_create_cluster(cell, image_clusters):
+    image_clusters.append(Cluster(cell))
 
 
 def already_in_cluster(image_clusters, cell):
@@ -143,7 +143,7 @@ def fishermans_algorithm(image, n, windows):
     image_clusters = []
 
     for i in tqdm(range(n)):
-        for j in range(n):
+        for j in tqdm(range(n)):
             while image[i][j]:
                 cell = image[i][j].pop()
                 pure_create_cluster(cell, image_clusters)
@@ -160,7 +160,7 @@ def get_and_remove_all_neighbours(c1, image, index, neighbouring_indices, neighb
 
     for k, c2 in enumerate(reversed(image[i][j])):
         if are_neighbours(c1, c2):
-            neighbours.append(c2)
+            neighbours.append((c2, index))
             image[i][j].pop(base - k)
 
     for i, window in enumerate(neighbouring_windows):
@@ -172,7 +172,7 @@ def get_and_remove_all_neighbours(c1, image, index, neighbouring_indices, neighb
         base = len(image[win_i][win_j]) - 1
         for k, c2 in enumerate(reversed(image[win_i][win_j])):
             if are_neighbours(c1, c2):
-                neighbours.append(c2)
+                neighbours.append((c2, (win_i, win_j)))
                 image[win_i][win_j].pop(base - k)
 
     return neighbours
@@ -194,15 +194,15 @@ def get_neighbouring_windows_fisherman(i, j, n, windows):
 
 
 def clusterise(cell, image_clusters, image, index, n, windows):
-    stack = deque([(cell)])
+    stack = deque([(cell, index)])
     while stack:
-        cell = stack.pop()
+        cell, index = stack.pop()
         neighbouring_indices, neighbouring_windows = get_neighbouring_windows_fisherman(index[0], index[1], n, windows)
         neighbours = get_and_remove_all_neighbours(cell, image, index, neighbouring_indices, neighbouring_windows)
-        cluster = pure_get_cluster(image_clusters, cell)
-        for neighbour in neighbours:
+        cluster = pure_get_cluster(image_clusters)
+        for neighbour, n_index in neighbours:
             pure_add_to_current_cluster(cluster, neighbour)
-            stack.append((neighbour))
+            stack.append((neighbour, n_index))
 
 
 
