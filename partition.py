@@ -32,6 +32,18 @@ def partition(image, tile_size=TILE_SIZE, to_list=False):
     while (y_step * tile_size) <= max(yMax):
         y_step = y_step + 1
 
+    max_cell_width = 0
+    max_cell_height = 0
+
+    for cell in image:
+        current_cell_width = cell[1] - cell[0]
+        current_cell_height = cell[3] - cell[2]
+        if current_cell_width > max_cell_width:
+            max_cell_width = current_cell_width
+        if current_cell_height > max_cell_height:
+            max_cell_height = current_cell_height
+
+
     for i in tqdm(range(tile_size)):
         for j in range(tile_size):
             x_left = x_base + (x_step * i)
@@ -50,7 +62,7 @@ def partition(image, tile_size=TILE_SIZE, to_list=False):
 
     tiles = np.array(tiles).reshape((tile_size, tile_size, 4))
 
-    return partitioned_image, tiles
+    return partitioned_image, tiles, max_cell_width, max_cell_height
 
 
 def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False):
@@ -130,22 +142,6 @@ def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False):
     tiles = np.array(tiles).reshape((tile_size, tile_size, 4))
 
     return partitioned_image, tiles
-
-
-def cleave_and_conquer(image, threshold, to_list=False):
-    """
-    Repeatedly divide an image in such a way so as to minimise the average number of cells per tile below a given threshold.
-    In theory this should reduce the search required towards the optimum - which is constraining search to only the neighbours of each cell.
-    Return the unevenly-partitioned input, and a table to indicate the neighbours of each tile(?).
-    """
-    pass
-
-
-#+------+
-#|      |
-#|      |
-#+------+
-
 
 
 

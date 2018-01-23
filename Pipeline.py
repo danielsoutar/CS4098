@@ -39,9 +39,9 @@ for file in glob.glob("./examples/*.p"):
     print("Separated ...")
 
     t = 25
-    partitioned_cancer_cells, windows = partition.partition(cancer_cells, tile_size=t, to_list=True)
+    partitioned_cancer_cells, windows, w, h = partition.partition(cancer_cells, tile_size=t, to_list=True)
     print("Cancer cells partitioned ...")
-    result = fishermans_algorithm(partitioned_cancer_cells, t, windows)
+    result = fishermans_algorithm(partitioned_cancer_cells, t, windows, w, h)
     print("Result retrieved ...")
 
     dups = set()

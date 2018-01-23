@@ -90,6 +90,21 @@ def are_neighbours(c1, c2):
     return xMinOk and xMaxOk and yMinOk and yMaxOk
 
 
+def are_extended_neighbours(c1, c2):
+    xMin1, xMax1, yMin1, yMax1 = c1[0], c1[1], c1[2], c1[3]
+    xMin2, xMax2, yMin2, yMax2 = c2[0], c2[1], c2[2], c2[3]
+
+    width = (xMax2 - xMin2) + d + extended_width
+    height = (yMax2 - yMin2) + d + extended_height
+
+    xMinOk = (xMin1 - width) < xMin2
+    xMaxOk = xMax2 < (xMax1 + width)
+    yMinOk = (yMin1 - height) < yMin2
+    yMaxOk = yMax2 < (yMax1 + height)
+
+    return xMinOk and xMaxOk and yMinOk and yMaxOk
+
+
 def get_all_neighbours(c1, image, cell_index):
     neighbours = []
     for i, c2 in enumerate(image[0:-cell_index-1]):
@@ -133,7 +148,17 @@ def simplest(image):
     return image_clusters
 
 
-def fishermans_algorithm(image, n, windows):
+extended_width = 0
+extended_height = 0
+
+def set_extensions(w, h):
+    global extended_width
+    global extended_height
+    extended_width = np.ceil(w / 2)
+    extended_height = np.ceil(h / 2)
+
+
+def fishermans_algorithm(image, n, windows, max_cell_width, max_cell_height):
     """
     Fisherman's algorithm on images to extract clusters.
     For every tile, for every available cell, get all neighbours and assign into a cluster.
@@ -141,6 +166,7 @@ def fishermans_algorithm(image, n, windows):
     Remove each cell along the way to reduce search for future cells.
     """
     image_clusters = []
+    set_extensions(max_cell_width, max_cell_height)
 
     for i in tqdm(range(n)):
         for j in tqdm(range(n)):
@@ -152,23 +178,16 @@ def fishermans_algorithm(image, n, windows):
     return image_clusters
 
 
-def get_and_remove_all_neighbours(c1, image, index, neighbouring_indices, neighbouring_windows):
+def get_and_remove_all_neighbours(c1, image, neighbouring_indices, neighbouring_windows):
     neighbours = []
     indices_to_check = []
-    i, j = index[0], index[1]
-    base = len(image[i][j]) - 1
-
-    for k, c2 in enumerate(reversed(image[i][j])):
-        if are_neighbours(c1, c2):
-            neighbours.append((c2, index))
-            image[i][j].pop(base - k)
 
     for i, window in enumerate(neighbouring_windows):
         win = np.array([window[0], window[2], window[1], window[3]])
-        if are_neighbours(c1, win):
+        if are_extended_neighbours(c1, win):
             indices_to_check.append(neighbouring_indices[i])
 
-    for (win_i, win_j) in neighbouring_indices:
+    for (win_i, win_j) in indices_to_check:
         base = len(image[win_i][win_j]) - 1
         for k, c2 in enumerate(reversed(image[win_i][win_j])):
             if are_neighbours(c1, c2):
@@ -198,7 +217,7 @@ def clusterise(cell, image_clusters, image, index, n, windows):
     while stack:
         cell, index = stack.pop()
         neighbouring_indices, neighbouring_windows = get_neighbouring_windows_fisherman(index[0], index[1], n, windows)
-        neighbours = get_and_remove_all_neighbours(cell, image, index, neighbouring_indices, neighbouring_windows)
+        neighbours = get_and_remove_all_neighbours(cell, image, neighbouring_indices, neighbouring_windows)
         cluster = pure_get_cluster(image_clusters)
         for neighbour, n_index in neighbours:
             pure_add_to_current_cluster(cluster, neighbour)
