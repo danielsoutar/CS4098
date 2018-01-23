@@ -3,8 +3,7 @@ import partition
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
-# from Cluster import window_cleaning_algorithm
-from Naive_Cluster import fishermans_algorithm
+from Cluster import fishermans_algorithm
 
 plt.ion()
 
