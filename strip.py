@@ -6,8 +6,8 @@ import zipfile
 from tqdm import tqdm
 
 
-# Our dataset is very deep - only 61 examples, but ~100 GB in total. So we'll remove completely unnecessary fields
-# to reduce the size to ~10 GB for better memory efficiency and convenience.
+# Our dataset is very deep - only 60-ish examples, but ~100 GB in total. So we'll remove completely unnecessary fields
+# to reduce the size to ~10 GB for convenience.
 def load_and_strip(src):
     reader = csv.reader(codecs.open(src, 'rU', 'utf-8'))
     with open('./stripped/_' + src, 'w', newline='') as dest:

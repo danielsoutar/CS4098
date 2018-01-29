@@ -3,7 +3,7 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-TILE_SIZE = 20
+TILE_SIZE = 25
 
 convert = lambda x: int(round(x))
 

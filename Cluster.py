@@ -56,6 +56,10 @@ def pure_add_to_current_cluster(cluster, cell):
     cluster.add_cell(cell)
 
 
+def extend_current_cluster(cluster, neighbours):
+    cluster.cells.extend(neighbours)
+
+
 def add_to_current_cluster(cluster, image_clusters, cell):
     cluster.add_cell(cell)
     key = get_key(cell)
@@ -219,9 +223,8 @@ def clusterise(cell, image_clusters, image, index, n, windows):
         cell, index = stack.pop()
         neighbouring_indices, neighbouring_windows = get_neighbouring_windows_fisherman(index[0], index[1], n, windows)
         neighbours = get_and_remove_all_neighbours(cell, image, neighbouring_indices, neighbouring_windows)
-        for neighbour, n_index in neighbours:
-            pure_add_to_current_cluster(cluster, neighbour)
-            stack.append((neighbour, n_index))
+        extend_current_cluster(cluster, neighbours)
+        stack.extend(neighbours)
 
 
 
