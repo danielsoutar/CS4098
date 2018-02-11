@@ -155,6 +155,7 @@ def simplest(image):
 extended_width = 0
 extended_height = 0
 
+
 def set_extensions(w, h):
     global extended_width
     global extended_height

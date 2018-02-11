@@ -43,7 +43,6 @@ def partition(image, tile_size=TILE_SIZE, to_list=False):
         if current_cell_height > max_cell_height:
             max_cell_height = current_cell_height
 
-
     for i in tqdm(range(tile_size)):
         for j in range(tile_size):
             x_left = x_base + (x_step * i)
