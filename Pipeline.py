@@ -13,6 +13,7 @@ plt.ion()
 
 parser.add_argument("--fish", help="flag for using fisherman's algorithm")
 parser.add_argument("--heat", help="flag for using heatmap")
+parser.add_argument("--object", help="flag for dumping the clusters")
 args = parser.parse_args()
 
 print(args)
@@ -65,6 +66,10 @@ for file in glob.glob("./examples/*.p"):
         result = fishermans_algorithm(partitioned_cancer_cells, t, windows, w, h)
         print("Result retrieved ...")
 
+        if args.object:
+            with open("./inputs/object/" + name + ".p", "wb") as dest:
+                pickle.dump(result, dest)
+
         dups = set()
         histogram = np.zeros(21, dtype=np.uint32)
 
@@ -101,7 +106,7 @@ for file in glob.glob("./examples/*.p"):
         plt.show()
         plt.close()
 
-        with open("./inputs/" + name + ".txt", "w", newline="") as dest:
+        with open("./inputs/object/" + name + ".txt", "w", newline="") as dest:
             dest.write("Average size of cluster: " + str(clusters_avg) + "\n")
             dest.write("Number of clusters: " + str(len(dups)) + "\n")
             dest.write("Total number of cells: " + str(total_cluster_cells) + "\n")
