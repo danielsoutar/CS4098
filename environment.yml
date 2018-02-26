@@ -8,6 +8,7 @@ dependencies:
     - imbalanced-learn
     - matplotlib
     - jupyter
+    - seaborn
     - scikit-learn
     - scikit-image
     - tqdm
