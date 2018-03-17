@@ -9,6 +9,7 @@ dependencies:
     - matplotlib
     - jupyter
     - seaborn
+    - scikit-plot
     - scikit-learn
     - scikit-image
     - tqdm

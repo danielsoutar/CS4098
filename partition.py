@@ -83,6 +83,12 @@ def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False):
     x_step = convert((max(xMax) - x_base) / tile_size)
     y_step = convert((max(yMax) - y_base) / tile_size)
 
+    while (x_step * tile_size) <= max(xMax):
+        x_step = x_step + 1
+
+    while (y_step * tile_size) <= max(yMax):
+        y_step = y_step + 1
+
     for i in tqdm(range(tile_size)):
         for j in range(tile_size):
             x_left = x_base + (x_step * i)
