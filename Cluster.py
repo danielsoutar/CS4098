@@ -1,9 +1,25 @@
 from collections import deque
 from tqdm import tqdm
 import numpy as np
+import math
 
 
 d = 7
+
+extended_width = 0
+extended_height = 0
+
+
+def set_d(value):
+    global d
+    d = value
+
+
+def set_extensions(w, h):
+    global extended_width
+    global extended_height
+    extended_width = np.ceil(w / 2)
+    extended_height = np.ceil(h / 2)
 
 
 class Cluster:
@@ -152,17 +168,6 @@ def simplest(image):
     return image_clusters
 
 
-extended_width = 0
-extended_height = 0
-
-
-def set_extensions(w, h):
-    global extended_width
-    global extended_height
-    extended_width = np.ceil(w / 2)
-    extended_height = np.ceil(h / 2)
-
-
 def fishermans_algorithm(image, n, windows, max_cell_width, max_cell_height):
     """
     Fisherman's algorithm on images to extract clusters.
@@ -227,7 +232,88 @@ def clusterise(cell, image_clusters, image, index, n, windows):
         extend_current_cluster(cluster, neighbours)
         stack.extend(neighbours)
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# To do with comparing cancer clusters to lymphocytes
+
+
+def get_and_remove_all_nearby_lymphocytes(cluster, image, neighbouring_indices, neighbouring_windows):
+    nearby_cd3, nearby_cd8 = [], []
+    indices_to_check = []
+
+    for i, window in enumerate(neighbouring_windows):
+        win = np.array([window[0], window[2], window[1], window[3]])
+        if are_extended_neighbours(cluster, win):
+            indices_to_check.append(neighbouring_indices[i])
+
+    for (win_i, win_j) in indices_to_check:
+        base = len(image[win_i][win_j][0]) - 1
+        for k, lymphocyte in enumerate(reversed(image[win_i][win_j][0])):
+            if are_nearby(cluster, lymphocyte):
+                # check if cd3
+                if lymphocyte[4] > 0:
+                    nearby_cd3.append(lymphocyte)
+                    image[win_i][win_j][0].pop(base - k)
+                elif lymphocyte[5] > 0:
+                    nearby_cd8.append(lymphocyte)
+                    image[win_i][win_j][0].pop(base - k)
+
+    return nearby_cd3, nearby_cd8
+
+
+def are_nearby(cluster, lymphocyte):
+    xAvg1, yAvg1 = (cluster[0] + cluster[1]) / 2, (cluster[2] + cluster[3]) / 2
+    xAvg2, yAvg2 = (lymphocyte[0] + lymphocyte[1]) / 2, (lymphocyte[2] + lymphocyte[3]) / 2
+
+    return math.sqrt(math.pow((xAvg2 - xAvg1), 2) + math.pow((yAvg2 - yAvg1), 2)) <= d
+
+
+def find_nearby_lymphocytes(cluster, image, index, n, windows):
+    neighbouring_indices, neighbouring_windows = get_neighbouring_windows_fisherman(index[0], index[1], n, windows)
+
+    nearby_cd3, nearby_cd8 = get_and_remove_all_nearby_lymphocytes(cluster, image, neighbouring_indices, neighbouring_windows)
+
+    return len(nearby_cd3), len(nearby_cd8)
+
+
+# Get the ratio of CD3/CD8 to cancer clusters.
+# Note that we find any CD3/CD8 cell within the specified margin (d) of any cancer cluster.
+# We only find these cells once. Consequently we don't double-count!
+def get_lymphocyte_cluster_ratio_heatmap(image, n, windows, max_lymph_width, max_lymph_height,
+                                         take_lymphocyte_ratio=True, take_cd3_ratio=False, take_cd8_ratio=False):
+    heatmap = np.zeros((n, n), dtype=np.float32)
+    set_extensions(max_lymph_width, max_lymph_height)
+
+    for i in range(n):
+        for j in range(n):
+            cd3_count, cd8_count, cluster_count = 0, 0, 0
+            ratio = -1
+
+            while image[i][j][1]:
+                cluster = image[i][j][1].pop()
+                cluster_count += 1
+                local_cd3_count, local_cd8_count = find_nearby_lymphocytes(cluster, image, (i, j), n, windows)
+                cd3_count += local_cd3_count
+                cd8_count += local_cd8_count
+
+            if cluster_count != 0:
+                if take_lymphocyte_ratio:
+                    ratio = (cd3_count + cd8_count) / cluster_count
+                elif take_cd3_ratio:
+                    ratio = cd3_count / cluster_count
+                elif take_cd8_ratio:
+                    ratio = cd8_count / cluster_count
+
+            heatmap[i][j] = ratio
+
+    return heatmap
 
 
 
