@@ -28,15 +28,26 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
     max_cell_width = 0
     max_cell_height = 0
 
+    max_clust_width = 0
+    max_clust_height = 0
+
     for cell in image:
-        if cell[-1] > 0:
+        if cell[-1] > 0 and input_type == "clean":
             continue
-        current_cell_width = cell[1] - cell[0]
-        current_cell_height = cell[3] - cell[2]
-        if current_cell_width > max_cell_width:
-            max_cell_width = current_cell_width
-        if current_cell_height > max_cell_height:
-            max_cell_height = current_cell_height
+        elif cell[-1] > 0 and input_type == "mixed":
+            current_clust_width = cell[1] - cell[0]
+            current_clust_height = cell[3] - cell[2]
+            if current_clust_width > max_clust_width:
+                max_clust_width = current_clust_width
+            if current_clust_height > max_clust_height:
+                max_clust_height = current_clust_height
+        else:
+            current_cell_width = cell[1] - cell[0]
+            current_cell_height = cell[3] - cell[2]
+            if current_cell_width > max_cell_width:
+                max_cell_width = current_cell_width
+            if current_cell_height > max_cell_height:
+                max_cell_height = current_cell_height
 
     if by_metric:
         x_step = tile_size * scale
@@ -79,7 +90,7 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
 
         tiles = np.array(tiles)
 
-        return partitioned_image, tiles, max_cell_width, max_cell_height
+        return partitioned_image, tiles, max_cell_width, max_cell_height, max_clust_width, max_clust_height, x_step, y_step
 
     partitioned_image = np.empty((tile_size, tile_size), dtype=object)
 
@@ -118,7 +129,7 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
 
     tiles = np.array(tiles).reshape((tile_size, tile_size, 4))
 
-    return partitioned_image, tiles, max_cell_width, max_cell_height
+    return partitioned_image, tiles, max_cell_width, max_cell_height, max_clust_width, max_clust_height, x_step, y_step
 
 
 def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=None, type="Cluster"):
@@ -135,6 +146,17 @@ def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False, by_metric
 
     x_base = min(xMin)
     y_base = min(yMin)
+
+    max_cell_width = 0
+    max_cell_height = 0
+
+    for cell in image:
+        current_cell_width = cell[1] - cell[0]
+        current_cell_height = cell[3] - cell[2]
+        if current_cell_width > max_cell_width:
+            max_cell_width = current_cell_width
+        if current_cell_height > max_cell_height:
+            max_cell_height = current_cell_height
 
     if by_metric:
         x_step = tile_size * scale
@@ -208,7 +230,7 @@ def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False, by_metric
         ##############
         plt.show()
 
-        return partitioned_image, tiles
+        return partitioned_image, tiles, max_cell_width, max_cell_height, x_step, y_step
 
     partitioned_image = np.empty((tile_size, tile_size), dtype=object)
 
@@ -220,17 +242,6 @@ def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False, by_metric
 
     while (y_step * tile_size) <= max(yMax):
         y_step = y_step + 1
-
-    max_cell_width = 0
-    max_cell_height = 0
-
-    for cell in image:
-        current_cell_width = cell[1] - cell[0]
-        current_cell_height = cell[3] - cell[2]
-        if current_cell_width > max_cell_width:
-            max_cell_width = current_cell_width
-        if current_cell_height > max_cell_height:
-            max_cell_height = current_cell_height
 
     for i in tqdm(range(tile_size)):
         for j in range(tile_size):
@@ -289,7 +300,7 @@ def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False, by_metric
 
     tiles = np.array(tiles).reshape((tile_size, tile_size, 4))
 
-    return partitioned_image, tiles, max_cell_width, max_cell_height
+    return partitioned_image, tiles, max_cell_width, max_cell_height, x_step, y_step
 
 
 
