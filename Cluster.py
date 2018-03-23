@@ -4,10 +4,15 @@ import numpy as np
 import math
 
 
-d = 7
+d = 50
 
 extended_width = 0
 extended_height = 0
+
+# Define field of interest to be just one 'ring' of windows around the tile in question (the upper limit is exclusive, hence 2).
+# If d is too large for the window size, add more rings to our field until d is within field of interest.
+width_field_range = [1, 2]
+height_field_range = [1, 2]
 
 
 def set_d(value):
@@ -20,6 +25,22 @@ def set_extensions(w, h):
     global extended_height
     extended_width = np.ceil(w / 2)
     extended_height = np.ceil(h / 2)
+
+
+def increase_window_field_x(x_step, d, w1, w2):
+    global width_field_range
+    while x_step <= d + w1 + w2:
+        width_field_range[0] += 1
+        width_field_range[1] += 1
+        x_step += x_step
+
+
+def increase_window_field_y(y_step, d, h1, h2):
+    global height_field_range
+    while y_step <= d + h1 + h2:
+        height_field_range[0] += 1
+        height_field_range[1] += 1
+        y_step += y_step
 
 
 class Cluster:
@@ -168,13 +189,18 @@ def simplest(image):
     return image_clusters
 
 
-def fishermans_algorithm(image, n, windows, max_cell_width, max_cell_height):
+def fishermans_algorithm(image, n, windows, max_cell_width, max_cell_height, x_step, y_step):
     """
     Fisherman's algorithm on images to extract clusters.
     For every tile, for every available cell, get all neighbours and assign into a cluster.
     From each neighbour, recursively get all neighbours and assign into same cluster.
     Remove each cell along the way to reduce search for future cells.
     """
+    if x_step <= d + (2 * max_cell_width):
+        raise Exception("Error - step size along x dimension not large enough for chosen value of d (" + str(d) + ").")
+    elif y_step <= d + (2 * max_cell_height):
+        raise Exception("Error - step size along y dimension not large enough for chosen value of d (" + str(d) + ").")
+
     image_clusters = []
     set_extensions(max_cell_width, max_cell_height)
 
@@ -211,8 +237,8 @@ def get_neighbouring_windows_fisherman(i, j, n, windows):
     neighbouring_indices = []
     neighbouring_windows = []
 
-    for range_i in range(i-1, i+2):
-        for range_j in range(j-1, j+2):
+    for range_i in range(i - width_field_range[0], i + width_field_range[1]):
+        for range_j in range(j - height_field_range[0], j + height_field_range[1]):
             if(range_i >= 0 and range_i < n and range_j >= 0 and range_j < n):
                 neighbouring_indices.append((range_i, range_j))
 
@@ -232,17 +258,6 @@ def clusterise(cell, image_clusters, image, index, n, windows):
         extend_current_cluster(cluster, neighbours)
         stack.extend(neighbours)
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-# To do with comparing cancer clusters to lymphocytes
-
 
 def get_and_remove_all_nearby_lymphocytes(cluster, image, neighbouring_indices, neighbouring_windows):
     nearby_cd3, nearby_cd8 = [], []
@@ -257,7 +272,6 @@ def get_and_remove_all_nearby_lymphocytes(cluster, image, neighbouring_indices, 
         base = len(image[win_i][win_j][0]) - 1
         for k, lymphocyte in enumerate(reversed(image[win_i][win_j][0])):
             if are_nearby(cluster, lymphocyte):
-                # check if cd3
                 if lymphocyte[4] > 0:
                     nearby_cd3.append(lymphocyte)
                     image[win_i][win_j][0].pop(base - k)
@@ -277,7 +291,6 @@ def are_nearby(cluster, lymphocyte):
 
 def find_nearby_lymphocytes(cluster, image, index, n, windows):
     neighbouring_indices, neighbouring_windows = get_neighbouring_windows_fisherman(index[0], index[1], n, windows)
-
     nearby_cd3, nearby_cd8 = get_and_remove_all_nearby_lymphocytes(cluster, image, neighbouring_indices, neighbouring_windows)
 
     return len(nearby_cd3), len(nearby_cd8)
@@ -286,8 +299,13 @@ def find_nearby_lymphocytes(cluster, image, index, n, windows):
 # Get the ratio of CD3/CD8 to cancer clusters.
 # Note that we find any CD3/CD8 cell within the specified margin (d) of any cancer cluster.
 # We only find these cells once. Consequently we don't double-count!
-def get_lymphocyte_cluster_ratio_heatmap(image, n, windows, max_lymph_width, max_lymph_height,
+def get_lymphocyte_cluster_ratio_heatmap(image, n, windows, max_lymph_width, max_lymph_height, max_cluster_width, max_cluster_height, x_step, y_step,
                                          take_lymphocyte_ratio=True, take_cd3_ratio=False, take_cd8_ratio=False):
+    if x_step <= d + max_lymph_width + max_cluster_width:
+        increase_window_field_x(x_step, d, max_lymph_width, max_cluster_width)
+    elif y_step <= d + max_lymph_height + max_cluster_height:
+        increase_window_field_y(y_step, d, max_lymph_height, max_cluster_height)
+
     heatmap = np.zeros((n, n), dtype=np.float32)
     set_extensions(max_lymph_width, max_lymph_height)
 
