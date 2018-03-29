@@ -59,7 +59,7 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
         while (x_base + (num_x_steps * x_step)) <= max(xMax):
             num_x_steps += 1
 
-        while (y_base + (num_y_steps * x_step)) <= max(yMax):
+        while (y_base + (num_y_steps * y_step)) <= max(yMax):
             num_y_steps += 1
 
         partitioned_image = np.empty((num_x_steps, num_y_steps), dtype=object)
@@ -88,7 +88,7 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
                     partitioned_image[i][j] = image[result]
                 tiles.append((x_left, y_low, x_right, y_high))
 
-        tiles = np.array(tiles)
+        tiles = np.array(tiles).reshape((num_x_steps, num_y_steps, 4))
 
         return partitioned_image, tiles, max_cell_width, max_cell_height, max_clust_width, max_clust_height, x_step, y_step
 

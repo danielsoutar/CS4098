@@ -76,7 +76,8 @@ def minimise_new_cluster_file(src):
     p_file.close()
 
 
-# Annoyingly, the actual sizes of these resulting files in the aggregate lead to 23GB of space. Not ideal, and weirdly less space efficient.
+# Annoyingly, the actual sizes of these resulting files in the aggregate lead to 23GB of space. Not ideal, and weirdly less space efficient. I ended up not
+# using this function.
 def minimise_new_lymphocyte_file(src):
     input_list = load(src)
     print(input_list[len(input_list) - 1])
