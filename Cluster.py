@@ -189,18 +189,13 @@ def simplest(image):
     return image_clusters
 
 
-def fishermans_algorithm(image, shape, windows, max_cell_width, max_cell_height, x_step, y_step):
+def fishermans_algorithm(image, shape, windows, max_cell_width, max_cell_height):
     """
     Fisherman's algorithm on images to extract clusters.
     For every tile, for every available cell, get all neighbours and assign into a cluster.
     From each neighbour, recursively get all neighbours and assign into same cluster.
     Remove each cell along the way to reduce search for future cells.
     """
-    if x_step <= d + (2 * max_cell_width):
-        raise Exception("Error - step size along x dimension not large enough for chosen value of d (" + str(d) + ").")
-    elif y_step <= d + (2 * max_cell_height):
-        raise Exception("Error - step size along y dimension not large enough for chosen value of d (" + str(d) + ").")
-
     (n1, n2) = shape
 
     image_clusters = []

@@ -31,23 +31,23 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
     max_clust_width = 0
     max_clust_height = 0
 
-    for cell in image:
-        if cell[-1] > 0 and input_type == "clean":
-            continue
-        elif cell[-1] > 0 and input_type == "mixed":
-            current_clust_width = cell[1] - cell[0]
-            current_clust_height = cell[3] - cell[2]
-            if current_clust_width > max_clust_width:
-                max_clust_width = current_clust_width
-            if current_clust_height > max_clust_height:
-                max_clust_height = current_clust_height
-        else:
+    if input_type == "clean":
+        for cell in image:
             current_cell_width = cell[1] - cell[0]
             current_cell_height = cell[3] - cell[2]
             if current_cell_width > max_cell_width:
                 max_cell_width = current_cell_width
             if current_cell_height > max_cell_height:
                 max_cell_height = current_cell_height
+    else:
+        for cell in image:
+            if cell[-1] > 0 and input_type == "mixed":
+                current_clust_width = cell[1] - cell[0]
+                current_clust_height = cell[3] - cell[2]
+                if current_clust_width > max_clust_width:
+                    max_clust_width = current_clust_width
+                if current_clust_height > max_clust_height:
+                    max_clust_height = current_clust_height
 
     if by_metric:
         x_step = tile_size * scale
@@ -129,7 +129,7 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
 
     tiles = np.array(tiles).reshape((tile_size, tile_size, 4))
 
-    return partitioned_image, tiles, max_cell_width, max_cell_height, max_clust_width, max_clust_height, x_step, y_step
+    return partitioned_image, tiles, max_cell_width, max_cell_height
 
 
 def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=None, type="Cluster"):

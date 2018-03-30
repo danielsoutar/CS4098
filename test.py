@@ -3,7 +3,8 @@ import partition
 import unittest
 import numpy as np
 
-# Test cases for fishermans clustering algorithm
+# Test cases for fishermans clustering algorithm - these assumed a distance of 7um.
+Cluster.set_d(7)
 
 
 def initialise_clusters(n):
@@ -218,12 +219,12 @@ class myTest(unittest.TestCase):
         t, partitioned_points, tiles = construct_input_neighbour_tile_checking()
 
         # Note we are at (0, 0), so we expect to see 4 neighbours (+1 because I am including the current tile)
-        neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(0, 0, t, tiles)
+        neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(0, 0, t, t, tiles)
         self.assertTrue(len(neighbouring_indices) == 4)
 
         # Now let's check for the other 3 corners
         for tile in [(0, t-1), (t-1, 0), (t-1, t-1)]:
-            neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(tile[0], tile[1], t, tiles)
+            neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(tile[0], tile[1], t, t, tiles)
             self.assertTrue(len(neighbouring_indices) == 4)
 
     def test_get_neighbouring_windows_side(self):
@@ -233,12 +234,12 @@ class myTest(unittest.TestCase):
         t, partitioned_points, tiles = construct_input_neighbour_tile_checking()
 
         # Note we are at (0, 1), so we expect to see 6 neighbours
-        neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(0, 1, t, tiles)
+        neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(0, 1, t, t, tiles)
         self.assertTrue(len(neighbouring_indices) == 6)
 
         # Now let's check for the other 3 sides
         for tile in [(1, 0), (2, 1), (1, 2)]:
-            neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(tile[0], tile[1], t, tiles)
+            neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(tile[0], tile[1], t, t, tiles)
             self.assertTrue(len(neighbouring_indices) == 6)
 
     def test_get_neighbouring_windows_central(self):
@@ -248,7 +249,7 @@ class myTest(unittest.TestCase):
         t, partitioned_points, tiles = construct_input_neighbour_tile_checking()
 
         # Note we are at (1, 1), so we expect to see 9 neighbours
-        neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(1, 1, t, tiles)
+        neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(1, 1, t, t, tiles)
         self.assertTrue(len(neighbouring_indices) == 9)
 
     def test_correct_number_of_total_neighbouring_windows(self):
@@ -276,7 +277,7 @@ class myTest(unittest.TestCase):
             count = 0
             for i in range(t):
                 for j in range(t):
-                    neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(i, j, t, tiles)
+                    neighbouring_indices, _ = Cluster.get_neighbouring_windows_fisherman(i, j, t, t, tiles)
                     count += len(neighbouring_indices)
 
             self.assertTrue(count == expected)
@@ -294,7 +295,7 @@ class myTest(unittest.TestCase):
                     cell = partitioned_points[i][j].pop()
                     ### ...
                     ### This would be in the clusterise() function.
-                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, tiles)
+                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, t, tiles)
                     neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
                     self.assertTrue(cell not in neighbours)
 
@@ -308,7 +309,7 @@ class myTest(unittest.TestCase):
                     cell = partitioned_points[i][j].pop()
                     ### ...
                     ### This would be in the clusterise() function.
-                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, tiles)
+                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, t, tiles)
                     neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
                     self.assertTrue(len(neighbours) == 0)
 
@@ -322,7 +323,7 @@ class myTest(unittest.TestCase):
                     cell = partitioned_points[i][j].pop()
                     ### ...
                     ### This would be in the clusterise() function.
-                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, tiles)
+                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, t, tiles)
                     neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
                     self.assertTrue(len(neighbours) == 1)
 
@@ -339,7 +340,7 @@ class myTest(unittest.TestCase):
                     cell = partitioned_points[i][j].pop()
                     ### ...
                     ### This would be in the clusterise() function.
-                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, tiles)
+                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, t, tiles)
                     neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
                     if i == origin_i and j == origin_j:
                         self.assertTrue(len(neighbours) == 1)
@@ -358,7 +359,7 @@ class myTest(unittest.TestCase):
                     cell = partitioned_points[i][j].pop()
                     ### ...
                     ### This would be in the clusterise() function.
-                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, tiles)
+                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, t, tiles)
                     neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
                     if i == origin_i and j == origin_j:
                         self.assertTrue(len(neighbours) == 1)
@@ -386,7 +387,7 @@ class myTest(unittest.TestCase):
                     cell = partitioned_points[i][j].pop()
                     ### ...
                     ### This would be in the clusterise() function.
-                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, tiles)
+                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, t, tiles)
                     neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
                     if i == target_i and j == target_j:
                         self.assertTrue(len(neighbours) == 0)
@@ -405,7 +406,7 @@ class myTest(unittest.TestCase):
                     cell = partitioned_points[i][j].pop()
                     ### ...
                     ### This would be in the clusterise() function.
-                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, tiles)
+                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, t, tiles)
                     neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
                     if i == target_i and j == target_j:
                         self.assertTrue(len(neighbours) == 1)
@@ -423,7 +424,7 @@ class myTest(unittest.TestCase):
                     cell = partitioned_points[i][j].pop()
                     ### ...
                     ### This would be in the clusterise() function.
-                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, tiles)
+                    neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(i, j, t, t, tiles)
                     neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
                     self.assertTrue(len(neighbours) == 3)
                     self.assertTrue(len(partitioned_points[i][j]) == 0)  # Removed all cells from that tile for this particular input
@@ -436,7 +437,7 @@ class myTest(unittest.TestCase):
             cell = partitioned_points[1][1].pop()
             ### ...
             ### This would be in the clusterise() function.
-            neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(1, 1, t, tiles)
+            neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(1, 1, t, t, tiles)
             neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
             self.assertTrue(len(neighbours) == 3)
             self.assertTrue(len(partitioned_points[1][1]) == 0)  # Removed cell from current tile
@@ -455,7 +456,7 @@ class myTest(unittest.TestCase):
             if np.array_equal(cell, cell_to_check):
                 ### ...
                 ### This would be in the clusterise() function.
-                neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(1, 1, t, tiles)
+                neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(1, 1, t, t, tiles)
                 neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
                 self.assertTrue(len(neighbours) == 3)
                 self.assertTrue(len(partitioned_points[1][1]) == 3)  # Still 3 other cells from the central tile
@@ -473,7 +474,7 @@ class myTest(unittest.TestCase):
             cell = partitioned_points[1][1].pop()
             ### ...
             ### This would be in the clusterise() function.
-            neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(1, 1, t, tiles)
+            neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(1, 1, t, t, tiles)
             neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
             if np.array_equal(cell, cell_to_check):
                 self.assertTrue(len(neighbours) == 3)
@@ -498,7 +499,7 @@ class myTest(unittest.TestCase):
                 cluster = Cluster.pure_get_cluster(image_clusters)
                 initial_length = len(cluster.cells)
 
-                neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(0, 0, t, tiles)
+                neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(0, 0, t, t, tiles)
                 neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
 
                 self.assertTrue(len(neighbours) == 0)
@@ -523,7 +524,7 @@ class myTest(unittest.TestCase):
                 cluster = Cluster.pure_get_cluster(image_clusters)
                 initial_length = len(cluster.cells)
 
-                neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(0, 0, t, tiles)
+                neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(0, 0, t, t, tiles)
                 neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
 
                 self.assertTrue(len(neighbours) == 1)
@@ -548,7 +549,7 @@ class myTest(unittest.TestCase):
                 cluster = Cluster.pure_get_cluster(image_clusters)
                 initial_length = len(cluster.cells)
 
-                neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(1, 1, t, tiles)
+                neighbouring_indices, neighbouring_tiles = Cluster.get_neighbouring_windows_fisherman(1, 1, t, t, tiles)
                 neighbours = Cluster.get_and_remove_all_neighbours(cell, partitioned_points, neighbouring_indices, neighbouring_tiles)
 
                 self.assertTrue(len(neighbours) == 3)
@@ -569,7 +570,7 @@ class myTest(unittest.TestCase):
             if np.array_equal(cell, cell_to_check):
                 Cluster.pure_create_cluster(cell, image_clusters)
 
-                Cluster.clusterise(cell, image_clusters, partitioned_points, (0, 0), t, tiles)
+                Cluster.clusterise(cell, image_clusters, partitioned_points, (0, 0), t, t, tiles)
 
                 cluster = Cluster.pure_get_cluster(image_clusters)
 
@@ -588,7 +589,7 @@ class myTest(unittest.TestCase):
             if np.array_equal(cell, cell_to_check):
                 Cluster.pure_create_cluster(cell, image_clusters)
 
-                Cluster.clusterise(cell, image_clusters, partitioned_points, (0, 0), t, tiles)
+                Cluster.clusterise(cell, image_clusters, partitioned_points, (0, 0), t, t, tiles)
 
                 cluster = Cluster.pure_get_cluster(image_clusters)
 
@@ -610,7 +611,7 @@ class myTest(unittest.TestCase):
             if np.array_equal(cell, cell_to_check):
                 Cluster.pure_create_cluster(cell, image_clusters)
 
-                Cluster.clusterise(cell, image_clusters, partitioned_points, (t-1, t-1), t, tiles)
+                Cluster.clusterise(cell, image_clusters, partitioned_points, (t-1, t-1), t, t, tiles)
 
                 cluster = Cluster.pure_get_cluster(image_clusters)
 
@@ -631,7 +632,8 @@ class myTest(unittest.TestCase):
                 while partitioned_points[i][j]:
                     cell = partitioned_points[i][j].pop()
                     Cluster.pure_create_cluster(cell, image_clusters)
-                    Cluster.clusterise(cell, image_clusters, partitioned_points, (i, j), t, tiles)
+                    # cell, image_clusters, image, index, n1, n2, windows
+                    Cluster.clusterise(cell, image_clusters, partitioned_points, (i, j), t, t, tiles)
                     cluster = Cluster.pure_get_cluster(image_clusters)
 
                     self.assertTrue(len(cluster.cells) == 4)
@@ -640,7 +642,7 @@ class myTest(unittest.TestCase):
     def test_fishermans_algorithm_many_cells_many_clusters_many_tiles(self):
         t, partitioned_points, tiles, w, h = construct_input_fishermans_checking("many_cells_many_clusters_many_tiles")
 
-        clusters = Cluster.fishermans_algorithm(partitioned_points, t, tiles, w, h)
+        clusters = Cluster.fishermans_algorithm(partitioned_points, (t, t), tiles, w, h)
 
         self.assertTrue(len(clusters) == 9)  # There are 9 clusters in the input
 
@@ -650,7 +652,7 @@ class myTest(unittest.TestCase):
     def test_fishermans_algorithm_many_cells_many_clusters_many_tiles_overlapping(self):
         t, partitioned_points, tiles, w, h = construct_input_fishermans_checking("many_cells_many_clusters_many_tiles_overlapping")
 
-        clusters = Cluster.fishermans_algorithm(partitioned_points, t, tiles, w, h)
+        clusters = Cluster.fishermans_algorithm(partitioned_points, (t, t), tiles, w, h)
 
         self.assertTrue(len(clusters) == 12)  # There are 12 clusters in the input
 
@@ -675,7 +677,7 @@ class myTest(unittest.TestCase):
 
             # The 'simplest' algorithm does not tile its inputs or take any other parameters
             simplest_clusters = Cluster.simplest(points)
-            fished_clusters = Cluster.fishermans_algorithm(partitioned_points, t, tiles, w, h)
+            fished_clusters = Cluster.fishermans_algorithm(partitioned_points, (t, t), tiles, w, h)
 
             # Both algorithms return different objects - so we transfer them both into sets
             set1, set2 = set(), set()
