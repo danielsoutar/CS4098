@@ -198,17 +198,17 @@ def fishermans_algorithm(image, shape, windows, max_cell_width, max_cell_height)
     """
     (n1, n2) = shape
 
-    image_clusters = []
+    clusters = []
     set_extensions(max_cell_width, max_cell_height)
 
     for i in tqdm(range(n1)):
         for j in tqdm(range(n2)):
             while image[i][j]:
                 cell = image[i][j].pop()
-                pure_create_cluster(cell, image_clusters)
-                clusterise(cell, image_clusters, image, (i, j), n1, n2, windows)
+                pure_create_cluster(cell, clusters)
+                clusterise(cell, clusters, image, (i, j), n1, n2, windows)
 
-    return image_clusters
+    return clusters
 
 
 def get_and_remove_all_neighbours(c1, image, neighbouring_indices, neighbouring_windows):
