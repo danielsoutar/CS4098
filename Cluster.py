@@ -116,7 +116,7 @@ def in_same_cluster(cell1, cell2, image_clusters):
     return cluster1 == cluster2
 
 
-def are_neighbours(c1, c2):
+def are_neighbours_box_model(c1, c2):
     xMin1, xMax1, yMin1, yMax1 = c1[0], c1[1], c1[2], c1[3]
     xMin2, xMax2, yMin2, yMax2 = c2[0], c2[1], c2[2], c2[3]
 
@@ -146,10 +146,17 @@ def are_extended_neighbours(c1, c2):
     return xMinOk and xMaxOk and yMinOk and yMaxOk
 
 
+def are_neighbours_euclid_model(c1, c2):
+    xAvg1, yAvg1 = (c1[0] + c1[1]) / 2, (c1[2] + c1[3]) / 2
+    xAvg2, yAvg2 = (c2[0] + c2[1]) / 2, (c2[2] + c2[3]) / 2
+
+    return math.sqrt(math.pow((xAvg2 - xAvg1), 2) + math.pow((yAvg2 - yAvg1), 2)) <= d
+
+
 def get_all_neighbours(c1, image, cell_index):
     neighbours = []
     for i, c2 in enumerate(image[0:-cell_index-1]):
-        if are_neighbours(c1, c2):
+        if are_neighbours_box_model(c1, c2):
             neighbours.append(c2)
 
     return neighbours
@@ -223,7 +230,7 @@ def get_and_remove_all_neighbours(c1, image, neighbouring_indices, neighbouring_
     for (win_i, win_j) in indices_to_check:
         base = len(image[win_i][win_j]) - 1
         for k, c2 in enumerate(reversed(image[win_i][win_j])):
-            if are_neighbours(c1, c2):
+            if are_neighbours_box_model(c1, c2):
                 neighbours.append((c2, (win_i, win_j)))
                 image[win_i][win_j].pop(base - k)
 
