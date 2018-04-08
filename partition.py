@@ -22,6 +22,14 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
     yMax = image[:, 3]
     yAvg = np.mean(np.array([yMin, yMax]), axis=0)
 
+    assert(xMin.shape[0] == xMax.shape[0])
+    assert(yMin.shape[0] == yMax.shape[0])
+    assert(xAvg.shape[0] == xMin.shape[0])
+    assert(yAvg.shape[0] == yMin.shape[0])
+    assert(xAvg.shape[0] == yAvg.shape[0])
+
+    total_num_cells = xMin.shape[0]
+
     x_base = min(xMin)
     y_base = min(yMin)
 
@@ -97,10 +105,10 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
     x_step = convert((max(xMax) - x_base) / (tile_size))
     y_step = convert((max(yMax) - y_base) / (tile_size))
 
-    while (x_step * tile_size) <= max(xMax):
+    while (x_base + (x_step * tile_size)) <= max(xMax):
         x_step = x_step + 1
 
-    while (y_step * tile_size) <= max(yMax):
+    while (y_base + (y_step * tile_size)) <= max(yMax):
         y_step = y_step + 1
 
     for i in tqdm(range(tile_size)):
@@ -128,6 +136,15 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
             tiles.append((x_left, y_low, x_right, y_high))
 
     tiles = np.array(tiles).reshape((tile_size, tile_size, 4))
+
+    try:
+        partitioned_sum = 0
+        for i in range(tile_size):
+            for j in range(tile_size):
+                partitioned_sum += len(partitioned_image[i][j])
+        assert(partitioned_sum == total_num_cells)
+    except:
+        raise Exception("Error - partitioning did not preserve all cells. Please check partition.py.")
 
     return partitioned_image, tiles, max_cell_width, max_cell_height
 

@@ -17,6 +17,8 @@ parser.add_argument("--object", help="flag for dumping the clusters")
 args = parser.parse_args()
 
 print(args)
+print(args.fish)
+print(args.object)
 
 for file in glob.glob("./examples/*.p"):
     print(file)
@@ -63,7 +65,7 @@ for file in glob.glob("./examples/*.p"):
             dest.write(str(spatial_distribution))
 
     if args.fish:
-        result = fishermans_algorithm(partitioned_cancer_cells, t, windows, w, h)
+        result = fishermans_algorithm(partitioned_cancer_cells, (t, t), windows, w, h)
         print("Result retrieved ...")
 
         if args.object:
@@ -102,17 +104,18 @@ for file in glob.glob("./examples/*.p"):
         plt.bar(x, y)
         plt.xlabel("Value")
         plt.ylabel("Frequency")
-        plt.savefig("./inputs/" + name + ".png", bbox_inches='tight')
+        # plt.savefig("./inputs/" + name + ".png", bbox_inches='tight')
         plt.show()
         plt.close()
 
-        with open("./inputs/object/" + name + ".txt", "w", newline="") as dest:
-            dest.write("Average size of cluster: " + str(clusters_avg) + "\n")
-            dest.write("Number of clusters: " + str(len(dups)) + "\n")
-            dest.write("Total number of cells: " + str(total_cluster_cells) + "\n")
-            dest.write("Cluster counts: " + "\n")
-            for i, x in enumerate(histogram):
-                dest.write(str(i) + ", " + str(x) + "\n")
+        if args.object:
+            with open("./inputs/object/" + name + ".txt", "w", newline="") as dest:
+                dest.write("Average size of cluster: " + str(clusters_avg) + "\n")
+                dest.write("Number of clusters: " + str(len(dups)) + "\n")
+                dest.write("Total number of cells: " + str(total_cluster_cells) + "\n")
+                dest.write("Cluster counts: " + "\n")
+                for i, x in enumerate(histogram):
+                    dest.write(str(i) + ", " + str(x) + "\n")
 
 os.system('say "All pickle files done in this batch."')
 

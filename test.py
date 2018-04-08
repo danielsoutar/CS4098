@@ -377,7 +377,7 @@ class myTest(unittest.TestCase):
 
         a = np.array([15, 26, 8, 12])
         b = np.array([31, 33, 8, 12])
-        self.assertTrue(Cluster.are_neighbours(a, b))  # They are neighbours.
+        self.assertTrue(Cluster.are_neighbours_box_model(a, b))  # They are neighbours.
 
         t, partitioned_points, tiles, _, _ = construct_input_get_and_remove_all_neighbours_checking("one_neighbour_different_tile_overlap")
 
