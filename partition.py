@@ -8,12 +8,15 @@ TILE_SIZE = 25
 convert = lambda x: int(round(x))
 
 
-def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=None, input_type="clean"):
+def partition(image, tile_size=TILE_SIZE, to_list=True, by_metric=False, scale=1, input_type="clean"):
     """
     Divide an image into a (tile_size x tile_size) grid and return the partitioned input.
     If by_metric flag is true, then we construct these tiles having an area of tile_size^2, in whatever scale the caller chooses.
     """
     tiles = []
+
+    if len(image) == 0:
+        raise Exception("Error: no objects to partition!")
 
     xMin = image[:, 0]
     xMax = image[:, 1]
@@ -32,6 +35,11 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
 
     x_base = min(xMin)
     y_base = min(yMin)
+
+    assert min(xMin) <= min(xMax), "xMin should have minimum"
+    assert min(xMin) <= min(xMax), "xMin should have minimum"
+    assert max(xMax) >= max(xMin), "xMax should have maximum"
+    assert max(yMax) >= max(yMin), "yMax should have maximum"
 
     max_cell_width = 0
     max_cell_height = 0
@@ -149,7 +157,7 @@ def partition(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=
     return partitioned_image, tiles, max_cell_width, max_cell_height
 
 
-def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=None, type="Cluster"):
+def partition_and_visualise(image, tile_size=TILE_SIZE, to_list=False, by_metric=False, scale=1, type="Cluster"):
     """Divide an image into a (num_tiles x num_tiles) grid, visualise, and return the partitioned input."""
     draw = []
     tiles = []

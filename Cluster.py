@@ -196,13 +196,20 @@ def simplest(image):
     return image_clusters
 
 
-def fishermans_algorithm(image, shape, windows, max_cell_width, max_cell_height):
+def fishermans_algorithm(image, d, shape, windows, max_cell_width, max_cell_height):
     """
     Fisherman's algorithm on images to extract clusters.
     For every tile, for every available cell, get all neighbours and assign into a cluster.
     From each neighbour, recursively get all neighbours and assign into same cluster.
     Remove each cell along the way to reduce search for future cells.
+
+    Returns a list of Cluster objects, where each cluster has a field .cells which is a list.
+    This list is of the form:
+
+        cluster.cells = [cell1, (cell2, tileForCell2), (cell3, tileForCell3), ... ]
+
     """
+    set_d(d)
     (n1, n2) = shape
 
     clusters = []
@@ -275,7 +282,7 @@ def get_and_remove_all_nearby_lymphocytes(cluster, image, neighbouring_indices, 
     for (win_i, win_j) in indices_to_check:
         base = len(image[win_i][win_j][0]) - 1
         for k, lymphocyte in enumerate(reversed(image[win_i][win_j][0])):
-            if are_nearby(cluster, lymphocyte):
+            if are_neighbours_euclid_model(cluster, lymphocyte):
                 if lymphocyte[4] > 0:
                     nearby_cd3.append(lymphocyte)
                     image[win_i][win_j][0].pop(base - k)
@@ -286,13 +293,6 @@ def get_and_remove_all_nearby_lymphocytes(cluster, image, neighbouring_indices, 
     return nearby_cd3, nearby_cd8
 
 
-def are_nearby(cluster, lymphocyte):
-    xAvg1, yAvg1 = (cluster[0] + cluster[1]) / 2, (cluster[2] + cluster[3]) / 2
-    xAvg2, yAvg2 = (lymphocyte[0] + lymphocyte[1]) / 2, (lymphocyte[2] + lymphocyte[3]) / 2
-
-    return math.sqrt(math.pow((xAvg2 - xAvg1), 2) + math.pow((yAvg2 - yAvg1), 2)) <= d
-
-
 def find_nearby_lymphocytes(cluster, image, index, n1, n2, windows):
     neighbouring_indices, neighbouring_windows = get_neighbouring_windows_fisherman(index[0], index[1], n1, n2, windows)
     nearby_cd3, nearby_cd8 = get_and_remove_all_nearby_lymphocytes(cluster, image, neighbouring_indices, neighbouring_windows)
@@ -300,11 +300,9 @@ def find_nearby_lymphocytes(cluster, image, index, n1, n2, windows):
     return len(nearby_cd3), len(nearby_cd8)
 
 
-# Get the ratio of CD3/CD8 to cancer clusters.
-# Note that we find any CD3/CD8 cell within the specified margin (d) of any cancer cluster.
-# We only find these cells once. Consequently we don't double-count!
-def get_lymphocyte_cluster_ratio_heatmap(image, shape, windows, max_lymph_width, max_lymph_height, max_cluster_width, max_cluster_height, x_step, y_step,
-                                         take_lymphocyte_ratio=True, take_cd3_ratio=False, take_cd8_ratio=False):
+def get_interacting_object_counts(image, d, shape, windows, max_lymph_width, max_lymph_height, max_cluster_width, max_cluster_height, x_step, y_step):
+    set_d(d)
+
     if x_step <= d + max_lymph_width + max_cluster_width:
         increase_window_field_x(x_step, d, max_lymph_width, max_cluster_width)
     elif y_step <= d + max_lymph_height + max_cluster_height:
@@ -312,34 +310,26 @@ def get_lymphocyte_cluster_ratio_heatmap(image, shape, windows, max_lymph_width,
 
     (n1, n2) = shape[0], shape[1]
 
-    heatmap = np.zeros((n1, n2), dtype=np.float32)
+    grid = np.zeros((n1, n2, 4))
     set_extensions(max_lymph_width, max_lymph_height)
 
     for i in range(n1):
         for j in range(n2):
             cd3_count, cd8_count, cluster_count = 0, 0, 0
-            ratio = -1
 
             while image[i][j][1]:
                 cluster = image[i][j][1].pop()
-                cluster_count += 1
                 local_cd3_count, local_cd8_count = find_nearby_lymphocytes(cluster, image, (i, j), n1, n2, windows)
+                cluster_count += 1
                 cd3_count += local_cd3_count
                 cd8_count += local_cd8_count
 
-            if cluster_count != 0:
-                if take_lymphocyte_ratio:
-                    ratio = (cd3_count + cd8_count) / cluster_count
-                elif take_cd3_ratio:
-                    ratio = cd3_count / cluster_count
-                elif take_cd8_ratio:
-                    ratio = cd8_count / cluster_count
+            grid[i][j][0] = cluster_count
+            grid[i][j][1] = cd3_count
+            grid[i][j][2] = cd8_count
+            grid[i][j][3] = cd3_count + cd8_count
 
-            heatmap[i][j] = ratio
-
-    return heatmap
-
-
+    return grid
 
 
 
